@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les fractions en 6 séances</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+<style>
+/* Idée : un cahier Seyès d'élève. Encre bleue, surligneur jaune pour les parts, stylo rouge pour la marge et les corrections. */
+:root{
+  --paper:#f7f9fd;
+  --card:#ffffff;
+  --ink:#1d2b6b;
+  --text:#22273a;
+  --muted:#5d6584;
+  --rule:#d6def3;
+  --margin:#e0605a;
+  --hl:#ffd23f;
+  --hl-soft:#fff4c4;
+  --ok:#1f8a4c;
+  --ok-soft:#e1f4e8;
+  --ko:#c8352d;
+  --ko-soft:#fbe7e5;
+  --lv0:#f4c7c3; --lv1:#fce8b2; --lv2:#b7e1cd; --lv3:#a4c2f4;
+  --display:"Baloo 2", "Trebuchet MS", sans-serif;
+  --body:"Lexend", "Segoe UI", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141829; --card:#1c2136; --ink:#a9bcff; --text:#e6e8f2; --muted:#a3a9c4;
+    --rule:#2b3252; --margin:#ef7d77; --hl:#e8b923; --hl-soft:#3a3218;
+    --ok:#5fd08e; --ok-soft:#173727; --ko:#ff8a80; --ko-soft:#3d1d1c;
+    --lv0:#6b3532; --lv1:#6b5a25; --lv2:#2d5e45; --lv3:#304f86;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141829; --card:#1c2136; --ink:#a9bcff; --text:#e6e8f2; --muted:#a3a9c4;
+  --rule:#2b3252; --margin:#ef7d77; --hl:#e8b923; --hl-soft:#3a3218;
+  --ok:#5fd08e; --ok-soft:#173727; --ko:#ff8a80; --ko-soft:#3d1d1c;
+  --lv0:#6b3532; --lv1:#6b5a25; --lv2:#2d5e45; --lv3:#304f86;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--rule) 55%, transparent) 1px, transparent 1px);
+  background-size:100% 32px, 32px 32px;
+  color:var(--text); font-family:var(--body); font-size:17px; line-height:1.55;
+}
+.wrap{max-width:860px; margin:0 auto; padding:20px 16px 60px}
+h1,h2,h3{font-family:var(--display); color:var(--ink); line-height:1.15; text-wrap:balance; margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.3rem); font-weight:800}
+h2{font-size:1.6rem; font-weight:800}
+h3{font-size:1.2rem; font-weight:600}
+p{margin:0}
+button{font:inherit; cursor:pointer}
+button:focus-visible, [tabindex]:focus-visible{outline:3px solid var(--ink); outline-offset:2px}
+.sheet{
+  background:var(--card); border-radius:14px; padding:22px 22px 22px 46px; position:relative;
+  box-shadow:0 1px 0 var(--rule), 0 10px 30px -18px rgba(20,30,80,.35);
+}
+.sheet::before{content:""; position:absolute; left:28px; top:0; bottom:0; width:2px; background:var(--margin); opacity:.75}
+.stack{display:flex; flex-direction:column; gap:14px}
+.row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+
+/* En-tête */
+.top{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; margin-bottom:18px}
+.kicker{font-size:.85rem; color:var(--muted); letter-spacing:.02em}
+.who{display:flex; gap:8px; align-items:center; background:var(--card); border:1px solid var(--rule); border-radius:999px; padding:6px 8px 6px 14px}
+.who input{border:none; background:transparent; color:var(--text); font:inherit; width:9.5em}
+.who input:focus{outline:none}
+.title-line{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.hero-frac{font-size:2.4rem}
+
+/* Fractions */
+.fr{display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.05; margin:0 .12em; font-variant-numeric:tabular-nums}
+.fr>span{padding:0 .18em}
+.fr>span:first-child{border-bottom:2px solid currentColor}
+.fr>span:last-child{padding-top:1px}
+
+/* Boutons */
+.btn{border:2px solid var(--ink); background:var(--ink); color:var(--card); border-radius:10px; padding:9px 16px; font-weight:600}
+.btn.ghost{background:transparent; color:var(--ink)}
+.btn.hl{background:var(--hl); border-color:var(--hl); color:#2b2300}
+.btn:disabled{opacity:.45; cursor:default}
+.btn.small{padding:6px 11px; font-size:.9rem}
+
+/* Parcours */
+.path{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:16px}
+.seance{background:var(--card); border:2px solid var(--rule); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px}
+.seance.eval{border-color:var(--ink); background:linear-gradient(var(--card),var(--card)) padding-box}
+.num{font-family:var(--display); font-weight:800; font-size:.95rem; color:var(--margin)}
+.chips{display:flex; gap:6px; flex-wrap:wrap}
+.chip{font-size:.78rem; border-radius:999px; padding:2px 9px; background:var(--paper); color:var(--muted); border:1px solid var(--rule)}
+.chip.done{background:var(--ok-soft); color:var(--ok); border-color:transparent}
+.stars{color:var(--hl); letter-spacing:2px; font-size:1.05rem}
+.stars .off{color:var(--rule)}
+
+/* Questions */
+.qhead{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
+.dots{display:flex; gap:5px; flex-wrap:wrap}
+.dot{width:11px; height:11px; border-radius:50%; background:var(--rule)}
+.dot.cur{background:var(--ink)}
+.dot.ok{background:var(--ok)} .dot.ko{background:var(--ko)} .dot.done{background:var(--muted)}
+.prompt{font-size:1.3rem; font-weight:500}
+.vis{display:flex; flex-direction:column; gap:8px; align-items:flex-start}
+.opts{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+.opt{border:2px solid var(--rule); background:var(--card); color:var(--text); border-radius:12px; padding:12px; font-size:1.25rem; min-height:64px; display:flex; align-items:center; justify-content:center; text-align:center}
+.opt:hover{border-color:var(--ink)}
+.opt.sel{border-color:var(--ink); background:var(--hl-soft)}
+.opt.ok{border-color:var(--ok); background:var(--ok-soft)}
+.opt.ko{border-color:var(--ko); background:var(--ko-soft)}
+.opt[disabled]{cursor:default}
+.opt.text{font-size:1.02rem}
+.feedback{border-radius:12px; padding:12px 14px; font-size:1.05rem}
+.feedback.ok{background:var(--ok-soft)} .feedback.ko{background:var(--ko-soft)}
+.feedback b{color:var(--ink)}
+
+/* Bandes */
+svg{max-width:100%; height:auto; display:block}
+.bar-click{display:flex; width:100%; max-width:420px; height:54px; border:2px solid var(--ink); border-radius:6px; overflow:hidden}
+.bar-click button{flex:1; border:none; border-right:2px solid var(--ink); background:var(--card)}
+.bar-click button:last-child{border-right:none}
+.bar-click button.on{background:var(--hl)}
+.live{font-size:2.2rem; color:var(--ink); font-family:var(--display); font-weight:800}
+
+/* Capsules */
+.steps{display:flex; gap:6px}
+.step-dot{flex:1; height:6px; border-radius:3px; background:var(--rule)}
+.step-dot.on{background:var(--ink)}
+.retiens{border-left:5px solid var(--hl); background:var(--hl-soft); padding:12px 14px; border-radius:0 10px 10px 0}
+.seg{display:flex; gap:6px; flex-wrap:wrap}
+.seg button{border:2px solid var(--ink); background:transparent; color:var(--ink); border-radius:8px; padding:5px 12px; font-weight:600}
+.seg button.on{background:var(--ink); color:var(--card)}
+.wall{display:flex; flex-direction:column; gap:4px; width:100%; max-width:440px}
+input[type=range]{width:100%; max-width:320px; accent-color:var(--ink)}
+
+/* Mémo */
+.overlay{position:fixed; inset:0; background:rgba(15,20,45,.45); display:flex; align-items:flex-start; justify-content:center; padding:24px 16px; overflow:auto; z-index:10}
+.memo{max-width:620px; width:100%}
+.memo h3{margin-bottom:4px}
+.memo ul{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px}
+.memo-tag{display:inline-block; font-family:var(--display); font-weight:800; color:var(--card); background:var(--margin); border-radius:6px; padding:0 8px; font-size:.85rem}
+.memos{display:grid; gap:14px}
+
+/* Résultats */
+table{border-collapse:collapse; width:100%; font-size:.92rem}
+th,td{border:1px solid var(--rule); padding:7px 8px; vertical-align:middle}
+th{background:var(--paper); font-weight:600}
+td.lv{text-align:center; width:13%; font-size:1.2rem}
+.table-wrap{overflow-x:auto}
+.big{font-family:var(--display); font-size:2.6rem; font-weight:800; color:var(--ink)}
+.review{display:flex; flex-direction:column; gap:10px}
+.review-item{border:1px solid var(--rule); border-radius:10px; padding:10px 12px}
+.review-item.ok{border-left:5px solid var(--ok)} .review-item.ko{border-left:5px solid var(--ko)}
+@media (max-width:480px){
+  .sheet{padding:18px 16px 18px 34px} .sheet::before{left:20px}
+  .prompt{font-size:1.15rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .pop{animation:pop .25s ease-out}
+  @keyframes pop{from{transform:scale(.97); opacity:.6} to{transform:none; opacity:1}}
+}
+.who[hidden], [hidden]{display:none !important}
+.field{font:inherit; padding:10px 12px; border:2px solid var(--rule); border-radius:10px; background:var(--card); color:var(--text); max-width:320px; letter-spacing:.05em}
+.field:focus{outline:none; border-color:var(--ink)}
+.toast{position:fixed; left:50%; bottom:20px; transform:translateX(-50%); background:var(--ink); color:var(--card); padding:10px 16px; border-radius:10px; z-index:20; max-width:90vw}
+.stat{padding:14px 18px 14px 40px; display:flex; flex-direction:column; min-width:170px; flex:1}
+.stat .big{font-size:2rem}
+table.dash{font-size:.85rem} table.dash td, table.dash th{padding:5px 6px; text-align:center} table.dash td:first-child{text-align:left; white-space:nowrap}
+.pdf-mode .sheet{box-shadow:none; border:1px solid #d6def3}
+.pdf-mode .review-item{break-inside:avoid}
+.pdf-mode .no-print{display:none !important}
+body.wide .wrap{max-width:1260px}
+@media print{
+  body{background:#fff} .top, .no-print, #layer, .toast{display:none !important}
+  .sheet{box-shadow:none; border:1px solid #d6def3} .review-item, tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="kicker">5e · Chapitre 5 · Nombres rationnels</div>
+      <div class="title-line"><h1>Les fractions</h1><span class="hero-frac" aria-hidden="true"></span></div>
+    </div>
+    <div class="who" id="who" hidden></div>
+  </div>
+  <main id="app" aria-live="polite"></main>
+</div>
+<div id="layer"></div>
+
+<script>
+/* ---------- Outils ---------- */
+const $ = s => document.querySelector(s);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const dec = x => (Math.round(x * 1000) / 1000).toString().replace(".", ",");
+const pgcd = (a, b) => b ? pgcd(b, a % b) : a;
+
+function F(n, d){ return `<span class="fr"><span>${n}</span><span>${d}</span></span>`; }
+// Mini-balisage : {3/4} devient une fraction écrite, {-2/5} une fraction négative.
+function R(s){ return String(s).replace(/\{(-?)([^{}\/]+)\/([^{}]+)\}/g, (m, neg, n, d) => (neg ? "−" : "") + F(n, d)); }
+
+const NAMES = {2:["demi","demis"],3:["tiers","tiers"],4:["quart","quarts"],5:["cinquième","cinquièmes"],6:["sixième","sixièmes"],7:["septième","septièmes"],8:["huitième","huitièmes"],9:["neuvième","neuvièmes"],10:["dixième","dixièmes"],12:["douzième","douzièmes"],14:["quatorzième","quatorzièmes"]};
+function fracWords(n, d){
+  const nm = NAMES[d];
+  if (n === "?") return nm ? "combien de " + nm[1] : "combien sur " + d;
+  if (!nm) return n + " sur " + d;
+  const k = Number(n);
+  return (k === 1 ? "un " + nm[0] : n + " " + nm[1]);
+}
+function S(s){ // texte lu à voix haute
+  return String(s)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\{(-?)([^{}\/]+)\/([^{}]+)\}/g, (m, neg, n, d) => (neg ? " moins " : " ") + fracWords(n, d) + " ")
+    .replace(/−/g, " moins ").replace(/≈/g, " environ ").replace(/…/g, " ... ")
+    .replace(/</g, " plus petit que ").replace(/>/g, " plus grand que ")
+    .replace(/=/g, " égale ").replace(/\+/g, " plus ").replace(/×/g, " fois ").replace(/÷/g, " divisé par ")
+    .replace(/\s+/g, " ");
+}
+const canSpeak = "speechSynthesis" in window;
+function speak(text){
+  if (!canSpeak) return;
+  try { const u = new SpeechSynthesisUtterance(S(text)); u.lang = "fr-FR"; u.rate = .9; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch(e){}
+}
+// Lit un bloc de la page : les fractions écrites sont lues comme des mots.
+function speakEl(el){
+  if (!el) return;
+  const c = el.cloneNode(true);
+  c.querySelectorAll(".fr").forEach(f => { const s = f.querySelectorAll("span"); f.replaceWith("{" + s[0].textContent + "/" + s[1].textContent + "}"); });
+  c.querySelectorAll("button, svg, input").forEach(b => b.remove());
+  speak(c.textContent);
+}
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+function stopSpeak(){ if (canSpeak) try { speechSynthesis.cancel(); } catch(e){} }
+
+/* ---------- Dessins ---------- */
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+// Bande de d parts, k coloriées. label : texte à droite.
+function bar(d, k, label, w){
+  w = w || 360; const h = 40, x0 = 2, inner = w - 4, pw = inner / d;
+  let r = "";
+  for (let i = 0; i < d; i++) r += `<rect x="${x0 + i * pw}" y="2" width="${pw}" height="${h}" fill="${i < k ? "var(--hl)" : "var(--card)"}" stroke="var(--ink)" stroke-width="2"/>`;
+  return `<div class="row" style="gap:12px; flex-wrap:nowrap; width:100%"><svg viewBox="0 0 ${w} ${h + 4}" style="width:100%; max-width:${w}px" role="img" aria-label="Bande coupée en ${d} parts, ${k} coloriées">${r}</svg>${label ? `<span style="font-size:1.2rem; white-space:nowrap">${R(label)}</span>` : ""}</div>`;
+}
+// Droite graduée de 0 à max, graduée tous les 1/den, points [{v, t}] et étiquettes du bas.
+function numline(max, den, points, labels){
+  const w = 440, x0 = 24, x1 = w - 24, y = 46, X = v => x0 + (x1 - x0) * v / max;
+  let s = `<line x1="${x0 - 8}" y1="${y}" x2="${x1 + 8}" y2="${y}" stroke="var(--ink)" stroke-width="2.5"/>`;
+  for (let i = 0; i <= max * den; i++){
+    const v = i / den, big = Number.isInteger(v);
+    s += `<line x1="${X(v)}" y1="${y - (big ? 11 : 7)}" x2="${X(v)}" y2="${y + (big ? 11 : 7)}" stroke="var(--ink)" stroke-width="${big ? 2.5 : 1.5}"/>`;
+    if (big) s += `<text x="${X(v)}" y="${y + 32}" text-anchor="middle" font-size="16" fill="var(--text)" font-family="Lexend, sans-serif">${v}</text>`;
+  }
+  (labels || []).forEach(l => { s += `<text x="${X(l.v)}" y="${y + 32}" text-anchor="middle" font-size="14" fill="var(--muted)" font-family="Lexend, sans-serif">${l.t}</text>`; });
+  (points || []).forEach(p => {
+    s += `<circle cx="${X(p.v)}" cy="${y}" r="7" fill="var(--margin)"/><text x="${X(p.v)}" y="${y - 18}" text-anchor="middle" font-size="18" font-weight="700" fill="var(--margin)" font-family="Lexend, sans-serif">${p.t}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} 90" style="width:100%; max-width:${w}px" role="img" aria-label="Droite graduée">${s}</svg>`;
+}
+
+/* ---------- Séances, compétences, mémos ---------- */
+const SEANCES = [
+  {n:1, title:"Parts", goal:"Je lis une fraction comme une part. Je place {1/2} et {1/4}."},
+  {n:2, title:"Même nombre, deux écritures", goal:"Je reconnais deux fractions égales. Je simplifie un cas simple."},
+  {n:3, title:"Comparer", goal:"Je compare deux fractions simples."},
+  {n:4, title:"Même dénominateur", goal:"J'additionne et je soustrais deux fractions de même dénominateur."},
+  {n:5, title:"Fraction et décimal", goal:"J'associe une fraction simple à un décimal. Je compare une fraction et un décimal."},
+  {n:6, title:"Je montre ce que je sais", goal:"Je calcule avec des fractions simples. Je contrôle un résultat."}
+];
+const COMPS = [
+  "Je lis une fraction comme une part et je place {1/2} et {1/4}",
+  "Je reconnais deux fractions égales et je simplifie",
+  "Je compare deux fractions simples",
+  "J'additionne et je soustrais des fractions de même dénominateur",
+  "J'associe une fraction simple à un décimal",
+  "Je calcule avec des fractions et je contrôle un résultat"
+];
+const LEVELS = ["Non acquise","Fragile","Acquise","Dépassée"];
+
+const MEMOS = {
+  1: () => `<h3><span class="memo-tag">Mémo 1</span> Une fraction, ce sont des parts égales</h3>
+    ${bar(4, 3, "{3/4}")}
+    <ul>
+      <li>Le nombre <b>du bas</b> (dénominateur) : en combien de parts égales on coupe.</li>
+      <li>Le nombre <b>du haut</b> (numérateur) : combien de parts on prend.</li>
+      <li>${R("La moitié = {1/2} · un quart = {1/4} · trois quarts = {3/4} · un tiers = {1/3}")}</li>
+      <li>${R("Toutes les parts : {4/4} = {2/2} = 1 entier.")}</li>
+    </ul>
+    ${numline(1, 4, [], [{v:.25,t:"1/4"},{v:.5,t:"1/2"},{v:.75,t:"3/4"}])}`,
+  2: () => `<h3><span class="memo-tag">Mémo 2</span> Même nombre, deux écritures</h3>
+    ${bar(2, 1, "{1/2}")}${bar(4, 2, "{2/4}")}${bar(8, 4, "{4/8}")}
+    <ul>
+      <li>${R("On multiplie (ou on divise) le haut <b>et</b> le bas par le même nombre : {1/2} = {2/4} = {4/8}.")}</li>
+      <li>${R("Simplifier : {6/8} → on divise par 2 → {3/4}.")}</li>
+      <li>${R("Haut = bas : la fraction vaut 1. {3/3} = 1.")}</li>
+      <li>${R("{6/2} = 6 ÷ 2 = 3 : six demis font 3 entiers.")}</li>
+    </ul>`,
+  3: () => `<h3><span class="memo-tag">Mémo 3</span> Comparer des fractions</h3>
+    ${bar(2, 1, "{1/2}")}${bar(4, 1, "{1/4}")}
+    <ul>
+      <li>${R("<b>Même dénominateur</b> : on compare les numérateurs. {3/5} &lt; {4/5}.")}</li>
+      <li>${R("<b>Numérateur 1</b> : plus on coupe en parts, plus elles sont petites. {1/4} &lt; {1/2}.")}</li>
+      <li>${R("<b>Par rapport à 1</b> : haut plus petit que bas → plus petit que 1. {2/5} &lt; 1.")}</li>
+      <li>${R("<b>Par rapport à la moitié</b> : {2/5} = 0,4 et {1/2} = 0,5, donc {2/5} &lt; {1/2}.")}</li>
+      <li>${R("Un nombre négatif est toujours plus petit qu'un positif : {-2/5} &lt; {1/2}.")}</li>
+    </ul>`,
+  4: () => `<h3><span class="memo-tag">Mémo 4</span> Additionner avec le même dénominateur</h3>
+    ${bar(7, 5, "{2/7} + {3/7} = {5/7}")}
+    <ul>
+      <li>${R("On additionne les numérateurs, on <b>garde</b> le dénominateur : {2/7} + {3/7} = {5/7}.")}</li>
+      <li>${R("Attention : {1/4} + {1/4} = {2/4}, et pas {2/8} ! Les parts restent des quarts.")}</li>
+      <li>${R("Soustraire, c'est pareil : {5/8} − {1/8} = {4/8}.")}</li>
+    </ul>`,
+  5: () => `<h3><span class="memo-tag">Mémo 5</span> Fraction et nombre décimal</h3>
+    ${numline(1, 4, [], [{v:.25,t:"0,25"},{v:.5,t:"0,5"},{v:.75,t:"0,75"}])}
+    <ul>
+      <li>${R("{1/2} = 0,5 · {1/4} = 0,25 · {3/4} = 0,75")}</li>
+      <li>${R("{1/10} = 0,1 · {3/10} = 0,3 · {7/10} = 0,7")}</li>
+      <li>${R("Une fraction, c'est une division : {1/4} = 1 ÷ 4 = 0,25.")}</li>
+      <li>${R("Piège : {1/4} n'est pas 0,4 !")}</li>
+    </ul>`,
+  6: () => `<h3><span class="memo-tag">Mémo 6</span> Calculer et contrôler</h3>
+    ${bar(4, 3, "{2/4} + {1/4} = {3/4}")}
+    <ul>
+      <li>${R("Dénominateurs différents : on écrit d'abord les fractions avec le même dénominateur. {1/2} + {1/4} = {2/4} + {1/4} = {3/4}.")}</li>
+      <li>${R("Puis en décimal : {3/4} = 0,75.")}</li>
+      <li>${R("Je contrôle : {1/2} + {1/4}, c'est un peu moins que 1. Un résultat plus grand que 1 serait faux.")}</li>
+    </ul>`
+};
+
+/* ---------- Générateurs de questions ----------
+   Chaque question : {c: compétence 0-5, q, vis, opts (la 1re est juste), keep, ex}
+*/
+function uniqOpts(arr){ const seen = new Set(); return arr.filter(o => { if (seen.has(o)) return false; seen.add(o); return true; }); }
+function fill(opts, extra){ opts = uniqOpts(opts); for (const e of shuffle(extra)){ if (opts.length >= 4) break; if (!opts.includes(e)) opts.push(e); } return opts.slice(0, 4); }
+
+const G = {
+  // Séance 1
+  read(){ const d = pick([2,3,4,5,6,8]), k = rnd(1, d - 1);
+    return {c:0, q:"Quelle fraction de la bande est coloriée ?", vis:bar(d, k),
+      opts: fill([`{${k}/${d}}`, `{${d - k}/${d}}`, `{${d}/${k}}`, `{${k}/${d + 1}}`], [`{${k + 1}/${d}}`, `{1/${d}}`]),
+      ex:`La bande est coupée en <b>${d}</b> parts égales et <b>${k}</b> sont coloriées : {${k}/${d}}.`}; },
+  color(){ const d = pick([3,4,5,6,8]), k = rnd(1, d - 1);
+    return {c:0, kind:"color", d, k, q:`Colorie {${k}/${d}} de la bande.`,
+      ex:`On coupe en <b>${d}</b> parts et on en colorie <b>${k}</b>.`}; },
+  words(){ const p = pick([
+      ["la moitié","{1/2}",["{2/1}","{1/4}","{2/2}"]],
+      ["un quart","{1/4}",["{4/1}","{1/2}","{1/3}"]],
+      ["trois quarts","{3/4}",["{4/3}","{3/3}","{1/4}"]],
+      ["un tiers","{1/3}",["{3/1}","{1/2}","{1/4}"]],
+      ["deux quarts","{2/4}",["{4/2}","{2/2}","{1/4}"]]]);
+    return {c:0, q:`Quelle fraction veut dire « ${p[0]} » ?`, opts:[p[1], ...p[2]], ex:`« ${p[0]} » s'écrit ${p[1]}.`}; },
+  entier(){ return {c:0, q:"Quelle fraction est égale à un entier ?", opts:["{4/4}","{1/4}","{4/1}","{2/4}"], ex:"Quand on prend toutes les parts, on a l'entier : {4/4} = 1."}; },
+  line(){ const vals = [[.25,"{1/4}"],[.5,"{1/2}"],[.75,"{3/4}"]], letters = shuffle(["A","B","C"]);
+    const t = pick(vals), pts = vals.map((v, i) => ({v:v[0], t:letters[i]})), good = pts.find(p => p.v === t[0]).t;
+    return {c:0, q:`Quel point est placé à ${t[1]} ?`, vis:numline(1, 4, pts), keep:true,
+      opts:[good, ...["A","B","C"].filter(l => l !== good)].sort(), answerText:good,
+      ex:`Entre 0 et 1, on coupe en 4 parts égales. ${t[1]} est au point ${good}.`}; },
+
+  // Séance 2
+  same(){ const p = pick([[1,2,2,4,1],[1,2,4,8,1],[1,3,2,6,1],[3,4,6,8,1],[1,2,3,6,1],[2,5,4,10,1],[1,2,2,6,0],[1,4,2,4,0],[2,3,3,4,0],[1,3,1,4,0]]);
+    return {c:1, q:`Les fractions {${p[0]}/${p[1]}} et {${p[2]}/${p[3]}} sont-elles égales ?`, vis:bar(p[1], p[0], `{${p[0]}/${p[1]}}`) + bar(p[3], p[2], `{${p[2]}/${p[3]}}`),
+      keep:true, opts: p[4] ? ["Oui","Non"] : ["Non","Oui"], order:["Oui","Non"],
+      ex: p[4] ? `Oui : les deux bandes ont la même longueur coloriée. On multiplie le haut et le bas par ${p[2] / p[0]}.` : `Non : les longueurs coloriées ne sont pas les mêmes.`}; },
+  simpl(){ const p = pick([[2,4],[3,6],[4,8],[2,6],[6,8],[5,10],[4,6],[6,9],[8,10],[3,9]]);
+    const g = pgcd(p[0], p[1]), a = p[0] / g, b = p[1] / g;
+    return {c:1, q:`Simplifie {${p[0]}/${p[1]}}.`,
+      opts: fill([`{${a}/${b}}`, `{${a}/${p[1]}}`, `{${p[0]}/${b}}`, `{${b}/${a}}`], [`{${a + 1}/${b}}`, `{1/${p[1]}}`]),
+      ex:`On divise le haut et le bas par ${g} : ${p[0]} ÷ ${g} = ${a} et ${p[1]} ÷ ${g} = ${b}. Donc {${p[0]}/${p[1]}} = {${a}/${b}}.`}; },
+  complete(){ const p = pick([[1,2,4],[1,2,8],[1,3,6],[3,4,8],[2,5,10],[1,4,8],[2,3,6]]);
+    const k = p[2] / p[1], ans = p[0] * k;
+    return {c:1, q:`Complète : {${p[0]}/${p[1]}} = {?/${p[2]}}`, opts: fill([String(ans), String(p[0]), String(p[2]), String(ans + 1)], [String(ans + 2), String(p[0] + k)]),
+      ex:`Le bas a été multiplié par ${k} (${p[1]} × ${k} = ${p[2]}). On multiplie aussi le haut : ${p[0]} × ${k} = ${ans}.`}; },
+  entier2(){ const p = pick([[6,2],[8,4],[9,3],[3,3],[10,5],[12,4],[4,4],[10,2]]), a = p[0] / p[1];
+    return {c:1, q:`{${p[0]}/${p[1]}} = ?`, opts: fill([String(a), String(p[0]), String(p[1]), String(p[0] * p[1])], [String(a + 1), String(p[0] - p[1])]),
+      ex:`Une fraction, c'est une division : ${p[0]} ÷ ${p[1]} = ${a}.`}; },
+
+  // Séance 3
+  _cmp(c, left, right, lv, rv, ex){ const s = lv < rv ? "<" : lv > rv ? ">" : "=";
+    return {c, q:`Compare : ${left} … ${right}`, keep:true, opts:[s, ...["<",">","="].filter(x => x !== s)], order:["<",">","="], ex}; },
+  cmpSame(){ const d = rnd(3, 10); let a = rnd(1, d), b = rnd(1, d); while (b === a) b = rnd(1, d);
+    return G._cmp(2, `{${a}/${d}}`, `{${b}/${d}}`, a, b, `Même dénominateur : on compare les numérateurs, ${a} ${a < b ? "<" : ">"} ${b}.`); },
+  cmpUnit(){ const opts = [2,3,4,5,6,8,10]; const a = pick(opts); let b = pick(opts); while (b === a) b = pick(opts);
+    const r = G._cmp(2, `{1/${a}}`, `{1/${b}}`, 1 / a, 1 / b, `Plus on coupe en parts, plus elles sont petites : {1/${Math.max(a, b)}} &lt; {1/${Math.min(a, b)}}.`);
+    r.vis = bar(a, 1, `{1/${a}}`) + bar(b, 1, `{1/${b}}`); return r; },
+  cmpOne(){ const d = rnd(3, 9), n = rnd(Math.max(1, d - 2), d + 2);
+    const txt = n < d ? `Le haut est plus petit que le bas : {${n}/${d}} &lt; 1.` : n > d ? `Le haut est plus grand que le bas : {${n}/${d}} &gt; 1.` : `Haut = bas : {${n}/${d}} = 1.`;
+    return G._cmp(2, `{${n}/${d}}`, "1", n / d, 1, txt); },
+  cmpHalf(){ const p = pick([[2,5],[3,5],[3,6],[4,10],[5,8],[2,4],[3,8],[7,10]]), v = p[0] / p[1];
+    return G._cmp(2, `{${p[0]}/${p[1]}}`, "{1/2}", v, .5, `{${p[0]}/${p[1]}} = ${dec(v)} et {1/2} = 0,5.`); },
+  cmpNeg(){ const a = pick([[1,2],[1,4],[3,4],[2,3]]), b = pick([[2,5],[1,3],[1,2],[3,4]]);
+    return Math.random() < .5
+      ? G._cmp(2, `{${a[0]}/${a[1]}}`, `{-${b[0]}/${b[1]}}`, 1, -1, "Un nombre positif est toujours plus grand qu'un nombre négatif.")
+      : G._cmp(2, `{-${b[0]}/${b[1]}}`, `{${a[0]}/${a[1]}}`, -1, 1, "Un nombre négatif est toujours plus petit qu'un nombre positif."); },
+
+  // Séance 4
+  add(){ const d = rnd(3, 10), a = rnd(1, d - 1), b = rnd(1, d - 1), s = a + b;
+    return {c:3, q:`{${a}/${d}} + {${b}/${d}} = ?`, vis: s <= d ? bar(d, s) : "",
+      opts: fill([`{${s}/${d}}`, `{${s}/${2 * d}}`, `{${a * b}/${d}}`, `{${s + 1}/${d}}`], [`{${s}/${d + 1}}`]),
+      ex:`On additionne les numérateurs : ${a} + ${b} = ${s}. On garde le dénominateur ${d}. Résultat : {${s}/${d}}.`}; },
+  sub(){ const d = rnd(4, 10), a = rnd(2, d), b = rnd(1, a - 1), r = a - b;
+    return {c:3, q:`{${a}/${d}} − {${b}/${d}} = ?`,
+      opts: fill([`{${r}/${d}}`, `{${a + b}/${d}}`, `{${r}/${2 * d}}`, `{${r + 1}/${d}}`], [`{${r}/${d - 1}}`]),
+      ex:`On soustrait les numérateurs : ${a} − ${b} = ${r}. On garde le dénominateur ${d}. Résultat : {${r}/${d}}.`}; },
+  trap(){ const d = rnd(3, 9), a = rnd(1, d - 1), b = rnd(1, d - 1), s = a + b;
+    return {c:3, q:`Léo écrit : {${a}/${d}} + {${b}/${d}} = {${s}/${2 * d}}. A-t-il raison ?`, opts: fill([`Non, c'est {${s}/${d}}`, "Oui, c'est juste", `Non, c'est {${a * b}/${d}}`, `Non, c'est {${s}/${d * d}}`], [`Non, c'est {${s + 1}/${d}}`, `Non, c'est {1/${d}}`]),
+      textOpts:true, ex:`On n'additionne pas les dénominateurs : les parts restent des ${NAMES[d] ? NAMES[d][1] : "parts de " + d}. {${a}/${d}} + {${b}/${d}} = {${s}/${d}}.`}; },
+  three(){ const d = rnd(4, 9);
+    return {c:3, q:`{1/${d}} + {1/${d}} + {1/${d}} = ?`, vis: bar(d, 3),
+      opts: fill([`{3/${d}}`, `{3/${3 * d}}`, `{1/${3 * d}}`, `{3/3}`], []), ex:`1 + 1 + 1 = 3 parts de ${d} : {3/${d}}.`}; },
+
+  // Séance 5
+  _pairs: [[1,2,"0,5"],[1,4,"0,25"],[3,4,"0,75"],[1,10,"0,1"],[3,10,"0,3"],[7,10,"0,7"],[1,5,"0,2"],[3,2,"1,5"],[2,2,"1"]],
+  toDec(){ const p = pick(G._pairs);
+    return {c:4, q:`Écris {${p[0]}/${p[1]}} en nombre décimal.`, opts: fill([p[2], ...[`${p[0]},${p[1]}`, `0,${p[1]}`, `${p[1]},${p[0]}`].filter(w => parseFloat(w.replace(",", ".")) !== p[0] / p[1])], ["0,4","0,25","0,5","0,75","1,2","0,3"].filter(w => w !== p[2])),
+      ex:`{${p[0]}/${p[1]}} = ${p[0]} ÷ ${p[1]} = ${p[2]}.`}; },
+  toFrac(){ const p = pick(G._pairs.filter(x => x[2] !== "1"));
+    return {c:4, q:`Quelle fraction est égale à ${p[2]} ?`, opts: fill([`{${p[0]}/${p[1]}}`], G._pairs.filter(x => x[2] !== p[2]).map(x => `{${x[0]}/${x[1]}}`)),
+      ex:`${p[2]} = {${p[0]}/${p[1]}} car ${p[0]} ÷ ${p[1]} = ${p[2]}.`}; },
+  cmpDec(){ const p = pick([["0,26",.26,1,4],["0,3",.3,1,4],["0,45",.45,1,2],["0,5",.5,1,2],["0,7",.7,3,4],["0,8",.8,3,4],["0,2",.2,1,4],["0,6",.6,1,2]]);
+    const r = G._cmp(4, p[0], `{${p[2]}/${p[3]}}`, p[1], p[2] / p[3], `{${p[2]}/${p[3]}} = ${dec(p[2] / p[3])}. On compare ${p[0]} et ${dec(p[2] / p[3])}.`); return r; },
+  lineDec(){ const vals = [[.25,"0,25"],[.5,"0,5"],[.75,"0,75"]], letters = shuffle(["A","B","C"]);
+    const t = pick(vals), pts = vals.map((v, i) => ({v:v[0], t:letters[i]})), good = pts.find(p => p.v === t[0]).t;
+    return {c:4, q:`Quel point est placé à ${t[1]} ?`, vis:numline(1, 4, pts), keep:true, opts:[good, ...["A","B","C"].filter(l => l !== good)].sort(), answerText:good,
+      ex:`0,25 = {1/4}, 0,5 = {1/2}, 0,75 = {3/4}. ${t[1]} est au point ${good}.`}; },
+
+  // Séance 6
+  diffDen(){ const p = pick([[1,2,1,4,"{2/4} + {1/4}","{3/4}","{2/6}"],[1,2,3,4,"{2/4} + {3/4}","{5/4}","{4/6}"],[1,3,1,6,"{2/6} + {1/6}","{3/6}","{2/9}"],[1,4,3,8,"{2/8} + {3/8}","{5/8}","{4/12}"],[3,2,1,4,"{6/4} + {1/4}","{7/4}","{4/6}"]]);
+    return {c:5, q:`{${p[0]}/${p[1]}} + {${p[2]}/${p[3]}} = ?`, opts: fill([p[5], p[6], `{${p[0] + p[2]}/${p[3]}}`, `{${p[0] + p[2]}/${p[1] + p[3] + 1}}`], ["{1/2}","{3/8}"]),
+      ex:`D'abord le même dénominateur : ${p[4]} = ${p[5]}. On n'additionne jamais les dénominateurs.`}; },
+  decResult(){ const p = pick([[3,10,4,10,"0,7",["0,07","0,34","7,10"]],[1,2,1,4,"0,75",["0,6","0,3","2,6"]],[1,4,1,4,"0,5",["0,8","0,25","0,44"]],[1,10,2,10,"0,3",["0,12","3,10","0,03"]]]);
+    return {c:5, q:`{${p[0]}/${p[1]}} + {${p[2]}/${p[3]}} = ? (en nombre décimal)`, opts:[p[4], ...p[5]],
+      ex:`{${p[0]}/${p[1]}} = ${dec(p[0] / p[1])} et {${p[2]}/${p[3]}} = ${dec(p[2] / p[3])}. ${dec(p[0] / p[1])} + ${dec(p[2] / p[3])} = ${p[4]}.`}; },
+  control(){ const p = pick([
+      ["{1/2} + {1/4} est plus petit que 1.", true, "{1/2} + {1/4} = {3/4}, c'est moins que 1."],
+      ["{3/4} + {3/4} est plus petit que 1.", false, "{3/4} + {3/4} = {6/4} : c'est plus que 1."],
+      ["{1/2} = 1,2", false, "{1/2} = 1 ÷ 2 = 0,5, pas 1,2."],
+      ["{2/4} + {1/4} = {3/4}", true, "Même dénominateur : 2 + 1 = 3 quarts."],
+      ["{1/3} ≈ 0,33", true, "1 ÷ 3 = 0,333… donc {1/3} ≈ 0,33."],
+      ["{1/2} + {1/2} = {2/4}", false, "La moitié plus la moitié, c'est 1 entier : {2/2} = 1."],
+      ["{7/14} = {1/2}", true, "7 est la moitié de 14."]]);
+    return {c:5, q:`Vrai ou faux ? ${p[0]}`, keep:true, opts: p[1] ? ["Vrai","Faux"] : ["Faux","Vrai"], order:["Vrai","Faux"], ex:p[2]}; }
+};
+
+const TRAIN = {
+  1:["read","read","color","color","words","entier","line","line"],
+  2:["same","same","simpl","simpl","complete","complete","entier2","entier2"],
+  3:["cmpSame","cmpSame","cmpUnit","cmpUnit","cmpOne","cmpHalf","cmpHalf","cmpNeg"],
+  4:["add","add","add","sub","sub","trap","three","add"],
+  5:["toDec","toDec","toFrac","toFrac","cmpDec","cmpDec","lineDec","toDec"],
+  6:["diffDen","diffDen","decResult","decResult","control","control","control","diffDen"]
+};
+const EVAL = [["read","color","line"],["same","simpl","complete"],["cmpSame","cmpUnit","cmpHalf"],["add","sub","trap"],["toDec","toFrac","cmpDec"],["diffDen","decResult","control"]];
+
+// Prépare une question : mélange les réponses en gardant la bonne.
+function build(name){
+  const g = G[name]();
+  if (g.kind === "color") return g;
+  const good = g.opts[0];
+  let opts = g.keep ? (g.order || g.opts) : shuffle(g.opts);
+  if (g.keep && g.answerText) opts = ["A","B","C"];
+  return {...g, opts, good: g.answerText || good};
+}
+function makeSet(list){
+  // Évite deux fois la même question d'affilée dans une série.
+  const out = [], seen = new Set();
+  for (const n of list){ let q, tries = 0; do { q = build(n); tries++; } while (seen.has(q.q + (q.vis || "")) && tries < 12); seen.add(q.q + (q.vis || "")); out.push(q); }
+  return out;
+}
+
+/* ---------- Connexion et enregistrement des résultats ----------
+   API_URL : l'adresse du script Google (Déployer > Application Web). Tant qu'elle n'est pas remplie,
+   la page fonctionne en mode démonstration et garde tout dans le navigateur. */
+const API_URL = "https://script.google.com/macros/s/AKfycby5--kpEQUOcBak_AoEu21IYjZ-NTWPKzMicjxbYstZmvrRrdcUaeAVL6mJb0QXWvgh/exec";
+const ONLINE = /^https:\/\/script\.google\.com\//.test(API_URL);
+const KEY = "fractions-ch5";
+function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
+function saveLocal(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e){} }
+const store = Object.assign({code:"", caps:{}, train:{}, eval:{status:"none"}, pending:null}, load());
+
+async function api(action, data){
+  if (!ONLINE) throw new Error("demo");
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    // Requête « simple » (text/plain) : pas de pré-vérification CORS avec Google Apps Script.
+    const r = await fetch(API_URL, {method:"POST", body: JSON.stringify(Object.assign({action}, data)), signal: ctrl.signal});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || "Erreur du serveur.");
+    return j;
+  } catch(e){
+    if (e.name === "AbortError") throw new Error("Le serveur ne répond pas. Vérifie la connexion internet.");
+    if (e instanceof TypeError) throw new Error("Impossible de joindre le serveur. Vérifie la connexion internet.");
+    throw e;
+  } finally { clearTimeout(timer); }
+}
+function applyStudent(st){ store.code = st.id; store.caps = st.caps || {}; store.train = st.train || {}; store.eval = st.eval || {status:"none"}; saveLocal(); }
+function setWho(){
+  const w = $("#who");
+  if (!store.code){ w.hidden = true; return; }
+  w.hidden = false;
+  w.innerHTML = `<span class="small muted">Connecté</span><b>${esc(store.code)}</b><button class="btn ghost small" id="logout">Changer</button>`;
+  $("#logout").onclick = () => { store.code = ""; store.caps = {}; store.train = {}; store.eval = {status:"none"}; saveLocal(); login(); };
+}
+function toast(msg){
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+function markCap(n){
+  store.caps[n] = true; saveLocal();
+  api("progress", {id: store.code, cap: n}).catch(e => { if (e.message !== "demo") toast("Progression non enregistrée : " + e.message); });
+}
+function saveTrain(n, stars){
+  store.train[n] = Math.max(store.train[n] || 0, stars); saveLocal();
+  api("progress", {id: store.code, train: {n, stars}}).catch(e => { if (e.message !== "demo") toast("Progression non enregistrée : " + e.message); });
+}
+
+function login(msg){
+  stopSpeak(); window.scrollTo(0, 0); setWho();
+  $("#app").innerHTML = `<div class="sheet stack pop" style="max-width:560px">
+    <h2>Bonjour !</h2>
+    <p>Écris le code que ton enseignante t'a donné.</p>
+    <form id="lf" class="stack">
+      <label for="code"><b>Mon code</b></label>
+      <input id="code" type="text" autocomplete="off" autocapitalize="characters" class="field" value="${esc(store.code || "")}">
+      <p id="err" class="small" style="color:var(--ko)">${msg ? esc(msg) : ""}</p>
+      <div class="row"><button class="btn hl" type="submit" id="go">Entrer</button></div>
+    </form>
+    ${ONLINE ? "" : `<p class="small muted">Mode démonstration : les résultats restent sur cet appareil.</p>`}
+    <hr style="border:none; border-top:1px solid var(--rule); width:100%">
+    <div class="row"><button class="btn ghost small" id="teach">Espace enseignant</button></div>
+  </div>`;
+  $("#code").focus();
+  $("#teach").onclick = teacherLogin;
+  $("#lf").onsubmit = async e => {
+    e.preventDefault();
+    const code = $("#code").value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "");
+    if (!code){ $("#err").textContent = "Écris ton code."; return; }
+    if (!ONLINE){ if (code !== store.code){ store.caps = {}; store.train = {}; store.eval = {status:"none"}; } store.code = code; saveLocal(); return home(); }
+    $("#go").disabled = true; $("#go").textContent = "Connexion…";
+    try { const r = await api("login", {id: code}); applyStudent(r.student); home(); }
+    catch(err){ $("#err").textContent = err.message; $("#go").disabled = false; $("#go").textContent = "Entrer"; }
+  };
+}
+async function boot(){
+  if (!store.code) return login();
+  home();
+  if (ONLINE){
+    try { const r = await api("login", {id: store.code}); applyStudent(r.student); if (!run && !cap) home(); }
+    catch(e){ toast("Hors connexion : ta progression sera mise à jour plus tard."); }
+    if (store.pending) retryPending();
+  }
+}
+
+/* ---------- Mémo en surimpression ---------- */
+function openMemo(n){
+  stopSpeak();
+  $("#layer").innerHTML = `<div class="overlay" id="ov" role="dialog" aria-modal="true" aria-label="Mémo">
+    <div class="sheet memo stack pop">${MEMOS[n]()}
+      <div class="row"><button class="btn" id="closeMemo">J'ai compris</button>${canSpeak ? `<button class="btn ghost" id="sayMemo">🔊 Écouter</button>` : ""}</div>
+    </div></div>`;
+  $("#closeMemo").onclick = closeMemo; $("#closeMemo").focus();
+  if ($("#sayMemo")) $("#sayMemo").onclick = () => speakEl($(".memo"));
+  $("#ov").addEventListener("click", e => { if (e.target.id === "ov") closeMemo(); });
+  document.addEventListener("keydown", escMemo);
+}
+function escMemo(e){ if (e.key === "Escape") closeMemo(); }
+function closeMemo(){ stopSpeak(); $("#layer").innerHTML = ""; document.removeEventListener("keydown", escMemo); }
+
+/* ---------- Accueil ---------- */
+function starsHtml(n){ n = n || 0; return `<span class="stars" aria-label="${n} étoile${n > 1 ? "s" : ""} sur 3">${"★".repeat(n)}<span class="off">${"★".repeat(3 - n)}</span></span>`; }
+function home(){
+  stopSpeak(); window.scrollTo(0, 0); setWho(); run = null; cap = null;
+  const ev = store.eval || {status:"none"}, res = ev.result;
+  const evChip = ev.status === "done" ? `<span class="chip done">Évaluation : ${String(res.note).replace(".", ",")}/20</span>` : ev.status === "started" ? `<span class="chip">Évaluation commencée</span>` : "";
+  const evBtn = ev.status === "done" ? `<button class="btn hl small" id="goEval">Mon résultat</button>` : `<button class="btn hl small" id="goEval">Évaluation</button>`;
+  const cards = SEANCES.map(s => {
+    const capDone = store.caps[s.n], st = store.train[s.n] || 0;
+    if (s.n === 6) return `<div class="seance eval">
+      <div class="num">Séance 6</div><h3>${s.title}</h3><p class="small muted">${R(s.goal)}</p>
+      <div class="chips"><span class="chip ${capDone ? "done" : ""}">${capDone ? "✓ " : ""}Capsule</span><span class="chip ${st ? "done" : ""}">Entraînement ${starsHtml(st)}</span>${evChip}</div>
+      <div class="row"><button class="btn ghost small" data-cap="6">Je me prépare</button><button class="btn ghost small" data-train="6">Je m'entraîne</button>${evBtn}</div>
+    </div>`;
+    return `<div class="seance">
+      <div class="num">Séance ${s.n}</div><h3>${s.title}</h3><p class="small muted">${R(s.goal)}</p>
+      <div class="chips"><span class="chip ${capDone ? "done" : ""}">${capDone ? "✓ " : ""}Capsule</span><span class="chip ${st ? "done" : ""}">Entraînement ${starsHtml(st)}</span></div>
+      <div class="row"><button class="btn small" data-cap="${s.n}">Capsule</button><button class="btn ghost small" data-train="${s.n}">Je m'entraîne</button><button class="btn ghost small" data-memo="${s.n}">Mémo</button></div>
+    </div>`;
+  }).join("");
+  $("#app").innerHTML = `<div class="sheet stack">
+      <p>Pour chaque séance : regarde la <b>capsule</b>, puis <b>entraîne-toi</b>. Le <b>mémo</b> t'aide si tu bloques. À la fin, montre ce que tu sais avec l'<b>évaluation</b>.</p>
+      <div class="row"><button class="btn ghost small" id="allMemos">Tous les mémos</button></div>
+      ${ONLINE ? "" : `<p class="small muted">Mode démonstration : les résultats restent sur cet appareil.</p>`}
+    </div>
+    <div class="path">${cards}</div>`;
+  document.querySelectorAll("[data-cap]").forEach(b => b.onclick = () => capsule(+b.dataset.cap));
+  document.querySelectorAll("[data-train]").forEach(b => b.onclick = () => startTrain(+b.dataset.train));
+  document.querySelectorAll("[data-memo]").forEach(b => b.onclick = () => openMemo(+b.dataset.memo));
+  $("#goEval").onclick = () => ev.status === "done" ? showResults(res) : evalIntro();
+  $("#allMemos").onclick = allMemos;
+}
+function allMemos(){
+  window.scrollTo(0, 0);
+  $("#app").innerHTML = `<div class="stack"><div class="row"><button class="btn ghost small" id="back">← Accueil</button></div>
+    <h2>Mes mémos</h2><div class="memos">${[1,2,3,4,5,6].map(n => `<div class="sheet memo stack">${MEMOS[n]()}</div>`).join("")}</div></div>`;
+  $("#back").onclick = home;
+}
+
+/* ---------- Capsules de cours ---------- */
+function check(name){ return {check: name}; }
+const CAPSULES = {
+  1: [
+    {t:"Une fraction, ce sont des parts égales", h:() => `<p>Choisis en combien de parts on coupe la bande, puis clique sur les parts pour les colorier.</p>
+      <div class="seg" id="dens">${[2,3,4,5,6,8].map(d => `<button data-d="${d}" class="${d === 4 ? "on" : ""}">${d} parts</button>`).join("")}</div>
+      <div class="bar-click" id="cb"></div>
+      <div class="row"><span class="live" id="live"></span><span id="liveTxt" class="muted"></span></div>
+      <div class="retiens">${R("En bas : en combien de parts on coupe. En haut : combien de parts on prend.")}</div>`,
+      init(){ let d = 4, on = new Set([0]);
+        const draw = () => { $("#cb").innerHTML = Array.from({length:d}, (_, i) => `<button aria-label="Part ${i + 1}" aria-pressed="${on.has(i)}" class="${on.has(i) ? "on" : ""}" data-i="${i}"></button>`).join("");
+          $("#live").innerHTML = R(`{${on.size}/${d}}`); $("#liveTxt").textContent = `${on.size} part${on.size > 1 ? "s" : ""} sur ${d}`;
+          $("#cb").querySelectorAll("button").forEach(b => b.onclick = () => { const i = +b.dataset.i; on.has(i) ? on.delete(i) : on.add(i); draw(); }); };
+        $("#dens").querySelectorAll("button").forEach(b => b.onclick = () => { d = +b.dataset.d; on = new Set([0]); $("#dens").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+        draw(); }},
+    {t:"Les fractions qu'on rencontre souvent", h:() => `${bar(2, 1, "{1/2} la moitié")}${bar(4, 1, "{1/4} un quart")}${bar(4, 3, "{3/4} trois quarts")}${bar(4, 4, "{4/4} = 1 entier")}
+      <div class="retiens">${R("Quand on prend toutes les parts, on a un entier : {4/4} = {2/2} = 1.")}</div>`},
+    {t:"Sur une droite graduée", h:() => `<p>${R("Entre 0 et 1, on coupe en 4 parts égales. Chaque graduation avance de {1/4}.")}</p>
+      ${numline(1, 4, [{v:.25,t:"¼"},{v:.5,t:"½"},{v:.75,t:"¾"}], [{v:.25,t:"1/4"},{v:.5,t:"1/2"},{v:.75,t:"3/4"}])}
+      <div class="retiens">${R("{1/2} est pile au milieu entre 0 et 1. {1/4} est au milieu entre 0 et {1/2}.")}</div>`},
+    check("read"), check("line")
+  ],
+  2: [
+    {t:"Même quantité, écritures différentes", h:() => `<p>Fais glisser le curseur : la partie coloriée ne change pas.</p>
+      <input type="range" id="k" min="1" max="5" value="1" aria-label="Multiplier par">
+      <div id="mul" class="vis"></div>
+      <div class="retiens">${R("On multiplie le haut <b>et</b> le bas par le même nombre : la fraction ne change pas.")}</div>`,
+      init(){ const draw = () => { const k = +$("#k").value; $("#mul").innerHTML = bar(2, 1, "{1/2}") + bar(2 * k, k, `{${k}/${2 * k}}`) + `<p>${R(`{1/2} = {${k}/${2 * k}}`)} <span class="muted">(× ${k} en haut et en bas)</span></p>`; };
+        $("#k").oninput = draw; draw(); }},
+    {t:"Simplifier", h:() => `${bar(8, 6, "{6/8}")}${bar(4, 3, "{3/4}")}
+      <p>${R("{6/8} : 6 et 8 sont tous les deux dans la table de 2. On divise en haut et en bas par 2 : {6/8} = {3/4}.")}</p>
+      <div class="retiens">${R("Simplifier, c'est diviser le haut et le bas par le même nombre.")}</div>`},
+    {t:"Une fraction peut être un nombre entier", h:() => `${bar(2, 2, "{2/2} = 1")}${bar(2, 2, "")}${bar(2, 2, "")}
+      <p>${R("Six demis, ce sont 3 bandes entières : {6/2} = 6 ÷ 2 = 3.")}</p>
+      <div class="retiens">${R("Haut = bas : ça fait 1. {3/3} = 1.")}</div>`},
+    check("same"), check("simpl")
+  ],
+  3: [
+    {t:"Le mur des fractions", h:() => `<div class="wall">${[2,3,4,6,8].map(d => bar(d, 1, `{1/${d}}`)).join("")}</div>
+      <div class="retiens">${R("Plus on coupe en parts, plus chaque part est petite : {1/8} &lt; {1/4} &lt; {1/2}.")}</div>`},
+    {t:"Même dénominateur", h:() => `${bar(5, 3, "{3/5}")}${bar(5, 4, "{4/5}")}
+      <div class="retiens">${R("Les parts ont la même taille : on compare les numérateurs. 3 &lt; 4 donc {3/5} &lt; {4/5}.")}</div>`},
+    {t:"Par rapport à 1 et à la moitié", h:() => `${bar(5, 2, "{2/5}")}${bar(2, 1, "{1/2}")}
+      <p>${R("{2/5} : le haut est plus petit que le bas, donc c'est plus petit que 1.")}</p>
+      <p>${R("{2/5} = 0,4 et {1/2} = 0,5. Donc {2/5} &lt; {1/2}.")}</p>
+      <div class="retiens">${R("Un nombre négatif est toujours plus petit qu'un positif : {-2/5} &lt; {1/2}.")}</div>`},
+    check("cmpUnit"), check("cmpSame")
+  ],
+  4: [
+    {t:"On ajoute des parts de même taille", h:() => `<p>Clique pour ajouter les parts.</p><div id="addv" class="vis"></div>
+      <div class="row"><button class="btn small" id="a1">Ajouter ${R("{2/7}")}</button><button class="btn small" id="a2" disabled>Ajouter ${R("{3/7}")}</button><button class="btn ghost small" id="a0">Recommencer</button></div>
+      <div class="retiens">${R("On additionne les numérateurs. On <b>garde</b> le dénominateur : {2/7} + {3/7} = {5/7}.")}</div>`,
+      init(){ let k = 0; const draw = () => { $("#addv").innerHTML = bar(7, k, k === 0 ? "{0/7}" : k === 2 ? "{2/7}" : "{2/7} + {3/7} = {5/7}"); $("#a1").disabled = k !== 0; $("#a2").disabled = k !== 2; };
+        $("#a1").onclick = () => { k = 2; draw(); }; $("#a2").onclick = () => { k = 5; draw(); }; $("#a0").onclick = () => { k = 0; draw(); }; draw(); }},
+    {t:"Le piège à éviter", h:() => `${bar(4, 1, "{1/4}")}${bar(4, 1, "{1/4}")}${bar(4, 2, "{1/4} + {1/4} = {2/4}")}
+      <p>${R("Si on écrit {2/8}, on obtient des huitièmes : c'est plus petit qu'un seul quart ! Impossible.")}</p>
+      <div class="retiens">${R("On n'additionne jamais les dénominateurs : {1/4} + {1/4} = {2/4}.")}</div>`},
+    {t:"Soustraire", h:() => `${bar(8, 5, "{5/8}")}${bar(8, 4, "{5/8} − {1/8} = {4/8}")}
+      <div class="retiens">${R("Pareil pour soustraire : 5 − 1 = 4, on garde le dénominateur.")}</div>`},
+    check("add"), check("trap")
+  ],
+  5: [
+    {t:"Une fraction est une division", h:() => `<p>${R("{1/2} = 1 ÷ 2 = 0,5")}</p><p>${R("{1/4} = 1 ÷ 4 = 0,25")}</p><p>${R("{3/4} = 3 ÷ 4 = 0,75")}</p>
+      <div class="retiens">${R("Les dixièmes sont faciles : {3/10} = 0,3 et {7/10} = 0,7.")}</div>`},
+    {t:"Sur la droite graduée", h:() => `<p>Clique sur un point pour voir ses deux écritures.</p>
+      <div class="seg" id="pts"><button data-v="0.25">A</button><button data-v="0.5">B</button><button data-v="0.75">C</button></div>
+      <div id="ptv"></div><p class="live" id="ptt" style="font-size:1.6rem"></p>`,
+      init(){ const map = {"0.25":["A","{1/4}","0,25"],"0.5":["B","{1/2}","0,5"],"0.75":["C","{3/4}","0,75"]};
+        const draw = v => { $("#ptv").innerHTML = numline(1, 4, [{v:.25,t:"A"},{v:.5,t:"B"},{v:.75,t:"C"}]); if (v){ const m = map[v]; $("#ptt").innerHTML = R(`${m[0]} : ${m[1]} = ${m[2]}`); } };
+        $("#pts").querySelectorAll("button").forEach(b => b.onclick = () => { $("#pts").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); draw(b.dataset.v); });
+        draw("0.25"); $("#pts").querySelector("button").classList.add("on"); }},
+    {t:"Le piège", h:() => `<p>${R("{1/4} n'est pas 0,4 ! On ne recopie pas les chiffres.")}</p>${bar(4, 1, "{1/4} = 0,25")}${bar(10, 4, "0,4 = {4/10}")}
+      <div class="retiens">${R("Pour comparer une fraction et un décimal, écris la fraction en décimal : {1/4} = 0,25 &lt; 0,26.")}</div>`},
+    check("toDec"), check("cmpDec")
+  ],
+  6: [
+    {t:"Dénominateurs différents", h:() => `${bar(2, 1, "{1/2}")}${bar(4, 2, "= {2/4}")}${bar(4, 3, "{2/4} + {1/4} = {3/4}")}
+      <div class="retiens">${R("On écrit d'abord les deux fractions avec le même dénominateur, puis on additionne : {1/2} + {1/4} = {2/4} + {1/4} = {3/4}.")}</div>`},
+    {t:"Puis en écriture décimale", h:() => `<p>${R("{3/4} = 0,75")}</p><p>${R("{3/10} + {4/10} = {7/10} = 0,7")}</p>
+      <div class="retiens">Le livret demande souvent les deux : la fraction, puis le nombre décimal.</div>`},
+    {t:"Je contrôle mon résultat", h:() => `<p>${R("{1/2} + {1/4} : la moitié plus un quart, c'est un peu moins que 1.")}</p>
+      <p>${R("Si je trouve {2/6}, c'est plus petit que {1/2} tout seul : impossible !")}</p>
+      <div class="retiens">Avant de valider, je me demande : est-ce que mon résultat est possible ?</div>`},
+    check("diffDen"), check("control")
+  ]
+};
+
+let cap = null;
+function capsule(n){
+  stopSpeak();
+  cap = {n, i:0, steps: CAPSULES[n].map(s => s.check ? {check:s.check, q: build(s.check)} : s)};
+  drawCapsule();
+}
+function drawCapsule(){
+  window.scrollTo(0, 0);
+  const s = cap.steps[cap.i], total = cap.steps.length, last = cap.i === total - 1;
+  const dots = cap.steps.map((_, i) => `<span class="step-dot ${i <= cap.i ? "on" : ""}"></span>`).join("");
+  let body;
+  if (s.check){
+    body = `<div class="num">Vérifie</div><div id="qzone"></div>`;
+  } else {
+    body = `<h2>${s.t}</h2><div class="stack">${s.h()}</div>`;
+  }
+  $("#app").innerHTML = `<div class="stack">
+    <div class="row" style="justify-content:space-between"><button class="btn ghost small" id="back">← Accueil</button><span class="small muted">Capsule · Séance ${cap.n} : ${SEANCES[cap.n - 1].title}</span></div>
+    <div class="steps">${dots}</div>
+    <div class="sheet stack pop">${body}
+      <div class="row" style="justify-content:space-between">
+        <div class="row">${cap.i > 0 ? `<button class="btn ghost" id="prev">Précédent</button>` : ""}${canSpeak && !s.check ? `<button class="btn ghost" id="say">🔊 Écouter</button>` : ""}</div>
+        <button class="btn ${last ? "hl" : ""}" id="next">${last ? "Je m'entraîne" : "Suivant"}</button>
+      </div>
+    </div></div>`;
+  $("#back").onclick = home;
+  if ($("#prev")) $("#prev").onclick = () => { cap.i--; drawCapsule(); };
+  if ($("#say")) $("#say").onclick = () => speakEl($(".sheet"));
+  $("#next").onclick = () => { if (last){ markCap(cap.n); startTrain(cap.n); } else { cap.i++; drawCapsule(); } };
+  if (s.init) s.init();
+  if (s.check){ $("#next").disabled = true; renderQuestion($("#qzone"), s.q, {mode:"capsule", memo:cap.n, onDone(){ $("#next").disabled = false; if (last){ markCap(cap.n); } }}); }
+}
+
+/* ---------- Affichage d'une question ---------- */
+// opts.mode : "capsule" | "train" (correction tout de suite) | "eval" (pas de correction)
+function renderQuestion(zone, q, o){
+  const isColor = q.kind === "color";
+  const memoBtn = o.mode !== "eval" ? `<button class="btn ghost small" id="memoBtn">Mémo</button>` : "";
+  const sayBtn = canSpeak ? `<button class="btn ghost small" id="sayQ">🔊 Écouter</button>` : "";
+  let inner;
+  if (isColor){
+    inner = `<div class="bar-click" id="cb">${Array.from({length:q.d}, (_, i) => `<button aria-label="Part ${i + 1}" aria-pressed="false" data-i="${i}"></button>`).join("")}</div>
+      <div class="row"><span class="muted small" id="cnt">0 part coloriée</span></div>`;
+  } else {
+    inner = `<div class="opts">${q.opts.map((t, i) => `<button class="opt ${q.textOpts ? "text" : ""}" data-i="${i}">${R(t)}</button>`).join("")}</div>`;
+  }
+  zone.innerHTML = `<div class="stack">
+    <div class="prompt">${R(q.q)}</div>
+    ${q.vis ? `<div class="vis">${q.vis}</div>` : ""}
+    <div class="row">${sayBtn}${memoBtn}</div>
+    ${inner}
+    <div class="row"><button class="btn" id="validate" disabled>Valider</button></div>
+    <div id="fb"></div></div>`;
+  if ($("#sayQ")) $("#sayQ").onclick = () => speak(q.q + (isColor ? "" : ". Réponses : " + q.opts.join(" ; ")));
+  if ($("#memoBtn")) $("#memoBtn").onclick = () => openMemo(o.memo || (q.c + 1));
+  let sel = null; const on = new Set();
+  if (isColor){
+    zone.querySelectorAll("#cb button").forEach(b => b.onclick = () => { const i = +b.dataset.i; on.has(i) ? on.delete(i) : on.add(i);
+      b.classList.toggle("on"); b.setAttribute("aria-pressed", on.has(i)); zone.querySelector("#cnt").textContent = `${on.size} part${on.size > 1 ? "s" : ""} coloriée${on.size > 1 ? "s" : ""}`; zone.querySelector("#validate").disabled = on.size === 0; });
+  } else {
+    zone.querySelectorAll(".opt").forEach(b => b.onclick = () => { sel = +b.dataset.i; zone.querySelectorAll(".opt").forEach(x => x.classList.toggle("sel", x === b)); zone.querySelector("#validate").disabled = false; });
+  }
+  zone.querySelector("#validate").onclick = () => {
+    stopSpeak();
+    const given = isColor ? `${on.size} part${on.size > 1 ? "s" : ""} sur ${q.d}` : q.opts[sel];
+    const ok = isColor ? on.size === q.k : q.opts[sel] === q.good;
+    const goodTxt = isColor ? `${q.k} parts sur ${q.d}` : q.good;
+    zone.querySelectorAll(".opt, #cb button").forEach(b => b.disabled = true);
+    zone.querySelector("#validate").remove();
+    const fb = zone.querySelector("#fb");
+    if (o.mode === "eval"){
+      fb.innerHTML = `<p class="muted">Réponse enregistrée.</p>`;
+      o.onDone(ok, given, goodTxt); return;
+    }
+    if (!isColor) zone.querySelectorAll(".opt").forEach((b, i) => { if (q.opts[i] === q.good) b.classList.add("ok"); else if (i === sel) b.classList.add("ko"); });
+    fb.innerHTML = `<div class="feedback ${ok ? "ok" : "ko"} pop stack"><p><b>${ok ? "Bravo !" : "Pas tout à fait."}</b> ${R(q.ex)}</p>
+      ${ok ? "" : `<div class="row"><button class="btn ghost small" id="fbMemo">Revoir le mémo</button></div>`}</div>`;
+    if ($("#fbMemo")) $("#fbMemo").onclick = () => openMemo(o.memo || (q.c + 1));
+    o.onDone(ok, given, goodTxt);
+  };
+}
+
+/* ---------- Entraînement ---------- */
+let run = null;
+function startTrain(n){
+  stopSpeak();
+  run = {mode:"train", n, qs: makeSet(shuffle(TRAIN[n])), i:0, res:[]};
+  drawRun();
+}
+function dotsHtml(){
+  return run.qs.map((_, i) => { const r = run.res[i]; let c = i === run.i ? "cur" : "";
+    if (r) c = run.mode === "eval" ? "done" : (r.ok ? "ok" : "ko"); return `<span class="dot ${c}"></span>`; }).join("");
+}
+function drawRun(){
+  window.scrollTo(0, 0);
+  const label = run.mode === "eval" ? "Évaluation · Je montre ce que je sais" : `Entraînement · Séance ${run.n} : ${SEANCES[run.n - 1].title}`;
+  $("#app").innerHTML = `<div class="stack">
+    <div class="row" style="justify-content:space-between"><button class="btn ghost small" id="back">← ${run.mode === "eval" ? "Quitter" : "Accueil"}</button><span class="small muted">${label}</span></div>
+    <div class="sheet stack pop">
+      <div class="qhead"><span class="num">Question ${run.i + 1} / ${run.qs.length}</span><div class="dots">${dotsHtml()}</div></div>
+      <div id="qzone"></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn" id="next" hidden>${run.i === run.qs.length - 1 ? "Voir mon résultat" : "Question suivante"}</button></div>
+    </div></div>`;
+  $("#back").onclick = () => { if (run.mode === "eval" && run.i > 0) return askQuit(); home(); };
+  renderQuestion($("#qzone"), run.qs[run.i], {mode: run.mode, memo: run.mode === "train" ? run.n : null, onDone(ok, given, good){
+    run.res[run.i] = {ok, given, good}; $(".dots").innerHTML = dotsHtml();
+    const nx = $("#next"); nx.hidden = false; nx.focus();
+    nx.onclick = () => { if (run.i < run.qs.length - 1){ run.i++; drawRun(); } else endRun(); };
+  }});
+}
+function askQuit(){
+  $("#layer").innerHTML = `<div class="overlay" id="ov" role="dialog" aria-modal="true"><div class="sheet stack memo pop">
+    <h3>Quitter l'évaluation ?</h3><p>Tes réponses ne seront pas gardées.</p>
+    <div class="row"><button class="btn" id="stay">Je continue</button><button class="btn ghost" id="leave">Quitter</button></div></div></div>`;
+  $("#stay").onclick = closeMemo; $("#leave").onclick = () => { closeMemo(); home(); }; $("#stay").focus();
+}
+function endRun(){
+  window.scrollTo(0, 0);
+  const good = run.res.filter(r => r.ok).length, total = run.qs.length;
+  if (run.mode === "eval") return endEval(good, total);
+  const stars = good === total ? 3 : good >= total - 2 ? 2 : good >= total / 2 ? 1 : 0;
+  saveTrain(run.n, stars);
+  const msg = stars === 3 ? "Parfait, tu maîtrises cette séance !" : stars === 2 ? "Très bien ! Encore une série pour les 3 étoiles ?" : stars === 1 ? "Bon début. Relis le mémo et recommence." : "Revois la capsule puis réessaie, tu vas y arriver.";
+  $("#app").innerHTML = `<div class="sheet stack pop">
+    <span class="num">Entraînement · Séance ${run.n}</span>
+    <div class="big">${good} / ${total}</div><div style="font-size:2rem">${starsHtml(stars)}</div>
+    <p>${msg}</p>
+    <div class="row"><button class="btn" id="again">Nouvelle série</button><button class="btn ghost" id="cap">Revoir la capsule</button><button class="btn ghost" id="memo">Mémo</button><button class="btn ghost" id="home">Accueil</button></div>
+  </div>`;
+  $("#again").onclick = () => startTrain(run.n); $("#cap").onclick = () => capsule(run.n);
+  $("#memo").onclick = () => openMemo(run.n); $("#home").onclick = home;
+}
+
+/* ---------- Évaluation ---------- */
+function evalIntro(){
+  stopSpeak(); window.scrollTo(0, 0);
+  $("#app").innerHTML = `<div class="sheet stack pop">
+    <span class="num">Séance 6 · Évaluation</span><h2>Je montre ce que je sais</h2>
+    <p>18 questions, 3 par compétence. Pas de mémo et pas de correction pendant l'évaluation : tu verras tout à la fin.</p>
+    <p><b>Attention :</b> tu ne peux faire l'évaluation qu'une seule fois. Prends ton temps.</p>
+    <p><b>Ton objectif :</b> réussir 4 questions sur 5, tout seul.</p>
+    <p id="err" class="small" style="color:var(--ko)"></p>
+    <div class="row"><button class="btn hl" id="start">Commencer l'évaluation</button><button class="btn ghost" id="home">Accueil</button></div>
+  </div>`;
+  $("#home").onclick = home;
+  $("#start").onclick = async () => {
+    $("#start").disabled = true; $("#start").textContent = "Un instant…";
+    if (ONLINE){
+      try {
+        const r = await api("evalStart", {id: store.code});
+        if (!r.allowed){
+          if (r.student) applyStudent(r.student);
+          if (r.reason === "done") return showResults(store.eval.result);
+          $("#err").textContent = "Tu as déjà commencé l'évaluation. Demande à ton enseignante de la rouvrir.";
+          $("#start").remove(); return;
+        }
+      } catch(e){ $("#err").textContent = e.message; $("#start").disabled = false; $("#start").textContent = "Commencer l'évaluation"; return; }
+    }
+    store.eval = {status:"started"}; saveLocal();
+    const list = []; EVAL.forEach(g => g.forEach(n => list.push(n)));
+    run = {mode:"eval", qs: makeSet(shuffle(list)), i:0, res:[]}; drawRun();
+  };
+}
+function computeResult(answers){
+  const levels = COMPS.map(() => 0); let good = 0;
+  answers.forEach(a => { if (a.ok){ good++; levels[a.c] = Math.min(3, levels[a.c] + 1); } });
+  return {date: new Date().toLocaleDateString("fr-FR"), good, total: answers.length, note: Math.round(good / answers.length * 40) / 2, levels, review: answers};
+}
+async function endEval(){
+  const answers = run.qs.map((q, i) => ({c: q.c, ok: run.res[i].ok, q: q.q, given: run.res[i].given, good: run.res[i].good, ex: q.ex}));
+  if (!ONLINE){ store.eval = {status:"done", result: computeResult(answers)}; saveLocal(); return showResults(store.eval.result); }
+  store.pending = answers; saveLocal();
+  $("#app").innerHTML = `<div class="sheet stack pop"><h2>J'envoie tes réponses…</h2><p class="muted">Ne ferme pas la page.</p></div>`;
+  retryPending();
+}
+async function retryPending(){
+  if (!store.pending) return;
+  try {
+    const r = await api("evalSubmit", {id: store.code, answers: store.pending});
+    store.pending = null; store.eval = {status:"done", result: r.result}; saveLocal();
+    showResults(r.result);
+  } catch(e){
+    $("#app").innerHTML = `<div class="sheet stack pop"><h2>Tes réponses ne sont pas encore envoyées</h2>
+      <p>${esc(e.message)}</p><p>Elles sont gardées sur cet appareil. Clique sur « Réessayer » quand internet revient.</p>
+      <div class="row"><button class="btn hl" id="retry">Réessayer</button></div></div>`;
+    $("#retry").onclick = () => { $("#retry").disabled = true; retryPending(); };
+  }
+}
+function levelsRows(levels){
+  return COMPS.map((c, i) => `<tr><td>${R(c)}<br><span class="small muted">Séance ${i + 1}</span></td>${[0,1,2,3].map(l => l === levels[i] ? `<td class="lv" style="background:var(--lv${l})">●</td>` : `<td class="lv"></td>`).join("")}</tr>`).join("");
+}
+function reviewHtml(review){
+  return `<div class="review">${review.map((x, i) => `<div class="review-item ${x.ok ? "ok" : "ko"}">
+      <p><b>${i + 1}.</b> ${R(x.q)}</p>
+      <p class="small">Réponse donnée : ${R(x.given)} ${x.ok ? "✓" : `· <b>Bonne réponse : ${R(x.good)}</b>`}</p>
+      ${x.ok ? "" : `<p class="small muted">${R(x.ex)}</p>`}</div>`).join("")}</div>`;
+}
+function showResults(r){
+  window.scrollTo(0, 0); run = null;
+  const pct = r.good / r.total, nm = esc(store.code), note = String(r.note).replace(".", ",");
+  const mot = pct >= .8 ? `Bravo ! Tu as atteint ton objectif : plus de 4 réponses sur 5.` :
+    pct >= .6 ? `Bien joué, tu y es presque ! Regarde tes erreurs ci-dessous, puis entraîne-toi sur les compétences en jaune ou en rouge.` :
+    `Courage ! Revois les capsules et les mémos des compétences en rouge, puis entraîne-toi : tu vas progresser.`;
+  const toWork = COMPS.map((c, i) => i).filter(i => r.levels[i] < 2);
+  $("#app").innerHTML = `<div class="stack">
+    <div class="row no-print"><button class="btn ghost small" id="back">← Accueil</button><button class="btn hl small" id="pdf">Télécharger mon bilan en PDF</button></div>
+    <p class="small muted no-print">Enregistre ce PDF puis dépose-le dans l'espace de la classe sur l'ENT.</p>
+    <div id="bilan" class="stack">
+    <div class="sheet stack">
+      <span class="kicker">Mathématiques · 5e · Chapitre 5 : les fractions · ${esc(r.date)}</span>
+      <h2 style="font-size:2.2rem">${nm}</h2>
+      <div class="row"><span class="big">${note} / 20</span><span class="muted">${r.good} bonnes réponses sur ${r.total}</span></div>
+      <p>${mot}</p>
+      ${toWork.length ? `<div class="row no-print">${toWork.map(i => `<button class="btn ghost small" data-train="${i + 1}">S'entraîner : séance ${i + 1}</button>`).join("")}</div>` : ""}
+      <h3>Mes compétences</h3>
+      <div class="table-wrap"><table><tr><th style="text-align:left">Compétence</th>${LEVELS.map(l => `<th>${l}</th>`).join("")}</tr>${levelsRows(r.levels)}</table></div>
+      <p class="small muted">Le point ● montre ton niveau : 0, 1, 2 ou 3 bonnes réponses sur les 3 questions de chaque compétence.</p>
+    </div>
+    <div class="sheet stack"><h3>Ma correction</h3>${reviewHtml(r.review)}</div>
+    </div>
+  </div>`;
+  $("#back").onclick = home;
+  $("#pdf").onclick = () => downloadPdf(`Bilan_fractions_${store.code || "eleve"}.pdf`);
+  document.querySelectorAll("[data-train]").forEach(b => b.onclick = () => startTrain(+b.dataset.train));
+}
+
+// Fabrique le PDF du bilan (toujours en thème clair), sinon ouvre l'impression du navigateur.
+async function downloadPdf(filename){
+  const btn = $("#pdf"), el = $("#bilan"), root = document.documentElement, prev = root.getAttribute("data-theme");
+  if (!window.html2pdf){ window.print(); return; }
+  btn.disabled = true; btn.textContent = "Préparation du PDF…";
+  root.setAttribute("data-theme", "light"); el.classList.add("pdf-mode");
+  try {
+    await html2pdf().set({margin:[10, 8, 12, 8], filename, image:{type:"jpeg", quality:.95},
+      html2canvas:{scale:2, backgroundColor:"#ffffff"}, jsPDF:{unit:"mm", format:"a4", orientation:"portrait"},
+      pagebreak:{mode:["css", "legacy"], avoid:[".review-item", "tr"]}}).from(el).save();
+  } catch(e){ window.print(); }
+  finally {
+    el.classList.remove("pdf-mode");
+    prev == null ? root.removeAttribute("data-theme") : root.setAttribute("data-theme", prev);
+    btn.disabled = false; btn.textContent = "Télécharger mon bilan en PDF";
+  }
+}
+
+/* ---------- Espace enseignant ---------- */
+let teacherCode = null, teacherData = [];
+function teacherLogin(){
+  stopSpeak(); window.scrollTo(0, 0);
+  $("#app").innerHTML = `<div class="sheet stack pop" style="max-width:560px">
+    <h2>Espace enseignant</h2>
+    ${ONLINE ? "" : `<p class="small" style="color:var(--ko)">La page n'est pas encore reliée au script Google : l'espace enseignant ne peut pas fonctionner.</p>`}
+    <form id="tf" class="stack">
+      <label for="tcode"><b>Code enseignant</b></label>
+      <input id="tcode" type="password" autocomplete="off" class="field">
+      <p id="err" class="small" style="color:var(--ko)"></p>
+      <div class="row"><button class="btn" type="submit" id="go">Ouvrir</button><button class="btn ghost" type="button" id="back">Retour</button></div>
+    </form></div>`;
+  $("#tcode").focus(); $("#back").onclick = () => store.code ? home() : login();
+  $("#tf").onsubmit = async e => {
+    e.preventDefault(); const code = $("#tcode").value;
+    $("#go").disabled = true; $("#go").textContent = "Vérification…";
+    try { const r = await api("teacher", {code, op:"list"}); teacherCode = code; teacherData = r.students; dashboard(); }
+    catch(err){ $("#err").textContent = err.message === "demo" ? "Reliez d'abord la page au script Google." : err.message; $("#go").disabled = false; $("#go").textContent = "Ouvrir"; }
+  };
+}
+async function teacherRefresh(op, id){
+  try { const r = await api("teacher", {code: teacherCode, op: op || "list", id}); teacherData = r.students; dashboard(); }
+  catch(e){ toast(e.message); }
+}
+function lvCell(l, extra){ return l == null ? `<td class="lv muted">—</td>` : `<td class="lv" style="background:var(--lv${l}); font-size:.8rem" title="${LEVELS[l]}">${LEVELS[l]}${extra || ""}</td>`; }
+function dashboard(){
+  window.scrollTo(0, 0); $("#who").hidden = true; document.body.classList.add("wide");
+  const done = teacherData.filter(s => s.eval.status === "done");
+  const avg = done.length ? Math.round(done.reduce((t, s) => t + s.eval.result.note, 0) / done.length * 2) / 2 : null;
+  const rows = teacherData.map(s => {
+    const res = s.eval.status === "done" ? s.eval.result : null;
+    const caps = Object.keys(s.caps).length;
+    const stars = [1,2,3,4,5,6].map(n => `<td class="lv small">${s.train[n] ? "★".repeat(s.train[n]) : "·"}</td>`).join("");
+    const st = res ? `<b>${String(res.note).replace(".", ",")}/20</b>` : s.eval.status === "started" ? `<span class="chip">Commencée</span>` : `<span class="muted small">Pas faite</span>`;
+    const last = s.last ? new Date(s.last).toLocaleDateString("fr-FR", {day:"numeric", month:"short"}) : "";
+    return `<tr><td><b>${esc(s.id)}</b><br><span class="small muted">${last}</span></td><td class="lv small">${caps}/6</td>${stars}<td class="lv">${st}</td>
+      ${COMPS.map((c, i) => lvCell(res ? res.levels[i] : null)).join("")}
+      <td class="lv"><div class="stack" style="gap:4px">${res ? `<button class="btn ghost small" data-detail="${esc(s.id)}">Détail</button>` : ""}${s.eval.status !== "none" ? `<button class="btn ghost small" data-reopen="${esc(s.id)}">Rouvrir</button>` : ""}</div></td></tr>`;
+  }).join("");
+  const foot = COMPS.map((c, i) => { const a = done.filter(s => s.eval.result.levels[i] >= 2).length; return `<td class="lv small"><b>${a}/${done.length}</b></td>`; }).join("");
+  $("#app").innerHTML = `<div class="stack">
+    <div class="row" style="justify-content:space-between"><h2>Suivi de la classe</h2><div class="row"><button class="btn ghost small" id="refresh">Actualiser</button><button class="btn ghost small" id="quit">Quitter</button></div></div>
+    <div class="row">
+      <div class="sheet stat"><span class="small muted">Élèves connectés</span><span class="big">${teacherData.length}</span></div>
+      <div class="sheet stat"><span class="small muted">Évaluations rendues</span><span class="big">${done.length}</span></div>
+      <div class="sheet stat"><span class="small muted">Moyenne indicative</span><span class="big">${avg == null ? "—" : String(avg).replace(".", ",")}</span></div>
+    </div>
+    <div class="sheet stack">
+      <div class="table-wrap"><table class="dash">
+        <tr><th rowspan="2" style="text-align:left">Élève</th><th rowspan="2">Capsules</th><th colspan="6">Entraînement (étoiles par séance)</th><th rowspan="2">Évaluation</th><th colspan="6">Compétences évaluées</th><th rowspan="2"></th></tr>
+        <tr>${[1,2,3,4,5,6].map(n => `<th>S${n}</th>`).join("")}${COMPS.map((c, i) => `<th title="${esc(c.replace(/\{|\}/g, ""))}">C${i + 1}</th>`).join("")}</tr>
+        ${rows || `<tr><td colspan="17" class="muted">Aucun élève ne s'est encore connecté.</td></tr>`}
+        ${done.length ? `<tr><td colspan="9" style="text-align:right" class="small"><b>Élèves ayant acquis (Acquise ou Dépassée)</b></td>${foot}<td></td></tr>` : ""}
+      </table></div>
+      <div class="small muted stack" style="gap:2px">${COMPS.map((c, i) => `<span>C${i + 1} : ${R(c)}</span>`).join("")}</div>
+      <p class="small muted">Les mêmes informations sont dans la feuille « Suivi » de votre Google Sheet.</p>
+    </div></div>`;
+  $("#refresh").onclick = () => teacherRefresh("list");
+  $("#quit").onclick = () => { teacherCode = null; teacherData = []; document.body.classList.remove("wide"); store.code ? home() : login(); };
+  document.querySelectorAll("[data-detail]").forEach(b => b.onclick = () => teacherDetail(b.dataset.detail));
+  document.querySelectorAll("[data-reopen]").forEach(b => b.onclick = () => confirmBox(`Rouvrir l'évaluation de ${b.dataset.reopen} ? Son résultat actuel sera effacé de la page (il reste dans la feuille « Évaluations »).`, () => teacherRefresh("reopen", b.dataset.reopen)));
+}
+function teacherDetail(id){
+  const s = teacherData.find(x => x.id === id); if (!s) return; const r = s.eval.result;
+  window.scrollTo(0, 0);
+  $("#app").innerHTML = `<div class="stack">
+    <div class="row"><button class="btn ghost small" id="back">← Suivi de la classe</button><button class="btn ghost small" id="pdf">Télécharger en PDF</button></div>
+    <div id="bilan" class="stack"><div class="sheet stack">
+      <span class="kicker">Évaluation du ${esc(r.date)}</span><h2>${esc(s.id)}</h2>
+      <div class="row"><span class="big">${String(r.note).replace(".", ",")} / 20</span><span class="muted">${r.good} bonnes réponses sur ${r.total}</span></div>
+      <div class="table-wrap"><table><tr><th style="text-align:left">Compétence</th>${LEVELS.map(l => `<th>${l}</th>`).join("")}</tr>${levelsRows(r.levels)}</table></div>
+    </div>
+    <div class="sheet stack"><h3>Réponses</h3>${reviewHtml(r.review)}</div></div></div>`;
+  $("#back").onclick = dashboard;
+  $("#pdf").onclick = async () => { await downloadPdf(`Bilan_fractions_${s.id}.pdf`); $("#pdf").textContent = "Télécharger en PDF"; };
+}
+function confirmBox(msg, yes){
+  $("#layer").innerHTML = `<div class="overlay" id="ov" role="dialog" aria-modal="true"><div class="sheet stack memo pop">
+    <p>${esc(msg)}</p><div class="row"><button class="btn" id="yes">Oui</button><button class="btn ghost" id="no">Annuler</button></div></div></div>`;
+  $("#no").onclick = closeMemo; $("#yes").onclick = () => { closeMemo(); yes(); }; $("#no").focus();
+}
+
+/* ---------- Démarrage ---------- */
+document.querySelector(".hero-frac").innerHTML = F(3, 4);
+boot();
+</script>
+</body>
+</html>
